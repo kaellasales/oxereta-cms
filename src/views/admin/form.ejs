@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title><%= article ? 'Editar' : 'Novo' %> Artigo — Ôxereta</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Arial', sans-serif; background: #f5f5f0; }
+
+    .topbar { background: #1a1a1a; color: #fff; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 24px; display: flex; justify-content: space-between; }
+    .topbar a { color: #ccc; text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+
+    .header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 16px 24px; }
+    .logo { font-family: 'Georgia', serif; font-size: 24px; text-decoration: none; color: #1a1a1a; }
+    .logo span { color: #e05c1a; font-weight: bold; }
+
+    .main { max-width: 760px; margin: 32px auto; padding: 0 24px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { font-family: 'Georgia', serif; font-size: 22px; font-weight: normal; }
+    .back { font-size: 12px; color: #888; text-decoration: none; }
+    .back:hover { color: #1a1a1a; }
+
+    .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 32px; }
+
+    .error {
+      background: #fef2f2;
+      border-left: 4px solid #dc2626;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 3px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .field { margin-bottom: 20px; }
+    label { display: block; font-size: 12px; color: #555; margin-bottom: 5px; }
+
+    input[type=text], input[type=url], input[type=datetime-local], select, textarea {
+      width: 100%; border: 1px solid #ddd; border-radius: 3px; padding: 9px 12px;
+      font-size: 14px; font-family: 'Arial', sans-serif; outline: none; background: #fafafa;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #999; background: #fff; }
+    textarea { min-height: 200px; resize: vertical; line-height: 1.6; }
+
+    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-item { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* SCHEDULE BOX */
+    .schedule-box {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+      margin-top: 0;
+    }
+    .schedule-box.open {
+      max-height: 120px;
+      opacity: 1;
+      margin-top: 16px;
+    }
+    .schedule-inner {
+      background: #fff8f0;
+      border: 1px solid #f5d0a9;
+      border-radius: 4px;
+      padding: 16px;
+    }
+    .schedule-inner label { color: #92400e; font-weight: bold; margin-bottom: 8px; }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid #eee;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: none;
+      border-radius: 3px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-family: 'Arial', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-draft {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+    .btn-draft:hover { background: #e5e7eb; }
+
+    .btn-publish {
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .btn-publish:hover { background: #333; }
+
+    .btn-schedule {
+      background: #fff;
+      color: #e05c1a;
+      border: 1px solid #e05c1a;
+    }
+    .btn-schedule:hover { background: #fff5f0; }
+    .btn-schedule.active {
+      background: #e05c1a;
+      color: #fff;
+    }
+
+    .btn-confirm-schedule {
+      background: #e05c1a;
+      color: #fff;
+      display: none;
+    }
+    .btn-confirm-schedule:hover { background: #c94e12; }
+    .btn-confirm-schedule.visible { display: inline-block; }
+
+    /* hidden status input */
+    #statusInput { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span>ÔXERETA Admin</span>
+    <span>Olá, <%= user.name %> · <a href="/auth/logout">Sair</a></span>
+  </div>
+
+  <div class="header">
+    <a href="/" class="logo">ÔXE<span>RETA</span></a>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <h1><%= article ? 'Editar artigo' : 'Novo artigo' %></h1>
+      <a href="/admin/articles" class="back">← Voltar</a>
+    </div>
+
+    <div class="card">
+      <% if (error) { %>
+        <div class="error">
+          <strong>⚠️ Atenção:</strong> <%= error %>
+        </div>
+      <% } %>
+
+      <form method="POST" 
+        action="<%= article ? '/admin/articles/' + article.id : '/admin/articles' %>"
+        enctype="multipart/form-data"
+        id="articleForm">
+
+        <!-- Campo oculto que guarda o status escolhido -->
+        <input type="hidden" name="status" id="statusInput" value="<%= article ? article.status : 'draft' %>">
+        <input type="hidden" name="publishedAt" id="publishedAtInput" value="<%= article && article.publishedAt ? new Date(article.publishedAt).toISOString().slice(0,16) : '' %>">
+
+        <div class="field">
+          <label>Título *</label>
+          <input type="text" name="title" required value="<%= article ? article.title : '' %>">
+        </div>
+
+        <div class="field">
+          <label>Subtítulo</label>
+          <input type="text" name="subtitle" value="<%= article ? article.subtitle || '' : '' %>">
+        </div>
+
+        <div class="field">
+          <label>Conteúdo *</label>
+          <textarea name="content" required><%= article ? article.content || '' : '' %></textarea>
+        </div>
+
+        <div class="field">
+          <label>Imagem de capa</label>
+          <% if (article && article.coverImage) { %>
+            <div style="margin-bottom:8px">
+              <img src="<%= article.coverImage %>" alt="capa atual"
+                style="max-width:200px;border-radius:3px;border:1px solid #ddd;">
+              <p style="font-size:11px;color:#aaa;margin-top:4px">Imagem atual — envie uma nova para substituir</p>
+            </div>
+          <% } %>
+          <input type="file" name="coverImage" accept="image/jpeg,image/png,image/webp,image/gif"
+            style="font-size:13px;padding:6px 0;">
+        </div>
+
+        <div class="field">
+          <label>Categoria</label>
+          <select name="categoryId">
+            <option value="">Selecionar...</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>" <%= article && article.categoryId == cat.id ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Tags</label>
+          <div class="tags-grid">
+            <% tags.forEach(tag => { %>
+              <label class="tag-item">
+                <input type="checkbox" name="tags" value="<%= tag.id %>"
+                  <%= article && article.Tags && article.Tags.some(t => t.id === tag.id) ? 'checked' : '' %>>
+                <%= tag.name %>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- CAIXA DE AGENDAMENTO (aparece ao clicar em Agendar) -->
+        <div class="schedule-box" id="scheduleBox">
+          <div class="schedule-inner">
+            <label>Agendar publicação para</label>
+            <input type="datetime-local" id="scheduleDate"
+              min="<%= new Date(Date.now() + 60000).toISOString().slice(0,16) %>"
+              value="<%= article && article.status === 'scheduled' && article.publishedAt ? new Date(article.publishedAt).toISOString().slice(0,16) : '' %>">
+          </div>
+        </div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div class="action-buttons">
+          <button type="button" class="btn btn-draft" onclick="submitAs('draft')">
+            Salvar rascunho
+          </button>
+          <button type="button" class="btn btn-publish" onclick="submitAs('published')">
+            Publicar agora
+          </button>
+          <button type="button" class="btn btn-schedule" id="btnSchedule" onclick="toggleSchedule()">
+            Agendar
+          </button>
+          <button type="button" class="btn btn-confirm-schedule" id="btnConfirm" onclick="submitAs('scheduled')">
+            Confirmar agendamento
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let scheduleOpen = false;
+
+    // Se já é um artigo agendado, abre a caixa ao carregar
+    <% if (article && article.status === 'scheduled') { %>
+      window.addEventListener('DOMContentLoaded', () => {
+        scheduleOpen = false;
+        toggleSchedule();
+      });
+    <% } %>
+
+    function toggleSchedule() {
+      const box = document.getElementById('scheduleBox');
+      const btnSchedule = document.getElementById('btnSchedule');
+      const btnConfirm = document.getElementById('btnConfirm');
+
+      scheduleOpen = !scheduleOpen;
+
+      if (scheduleOpen) {
+        box.classList.add('open');
+        btnSchedule.classList.add('active');
+        btnConfirm.classList.add('visible');
+        // Scroll suave até a caixa
+        setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      } else {
+        box.classList.remove('open');
+        btnSchedule.classList.remove('active');
+        btnConfirm.classList.remove('visible');
+      }
+    }
+
+    function submitAs(status) {
+      const statusInput = document.getElementById('statusInput');
+      const publishedAtInput = document.getElementById('publishedAtInput');
+      const scheduleDate = document.getElementById('scheduleDate');
+
+      if (status === 'scheduled') {
+        if (!scheduleDate.value) {
+          alert('Por favor, selecione uma data e horário para o agendamento.');
+          scheduleDate.focus();
+          return;
+        }
+        if (new Date(scheduleDate.value) <= new Date()) {
+          alert('A data de agendamento deve ser no futuro.');
+          scheduleDate.focus();
+          return;
+        }
+        publishedAtInput.value = scheduleDate.value;
+      } else if (status === 'published') {
+        publishedAtInput.value = new Date().toISOString().slice(0, 16);
+      } else {
+        publishedAtInput.value = '';
+      }
+
+      statusInput.value = status;
+      document.getElementById('articleForm').submit();
+    }
+  </script>
+
+</body>
+</html>

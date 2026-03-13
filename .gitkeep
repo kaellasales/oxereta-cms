@@ -1,0 +1,2 @@
+echo "" > public/uploads/.gitkeep
+
