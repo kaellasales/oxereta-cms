@@ -70,6 +70,8 @@ exports.articleDetail = async (req, res) => {
 
     setImmediate(() => article.increment('views'));
 
+    const categories = await Category.findAll(); // <- adicionado
+
     const featured = await Article.findAll({
       where: { status: 'published' },
       include: [{ model: Category }],
@@ -77,7 +79,7 @@ exports.articleDetail = async (req, res) => {
       limit: 4,
     });
 
-    res.render('article', { article, featured });
+    res.render('article', { article, featured, categories }); // <- categories passado
   } catch (err) {
     console.error(err);
     res.status(500).send('Erro interno');

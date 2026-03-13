@@ -2,51 +2,107 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Meus Artigos — NewsDesk</title>
+  <title>Meus Artigos — Ôxereta</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Arial', sans-serif; background: #f5f5f0; }
-    .topbar { background: #1a1a1a; color: #fff; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 24px; display: flex; justify-content: space-between; }
-    .topbar a { color: #ccc; text-decoration: none; }
-    .topbar a:hover { color: #fff; }
-    .header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-family: 'Georgia', serif; font-size: 24px; text-decoration: none; color: #1a1a1a; }
+
+    /* HEADER */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo { font-family: 'Georgia', serif; font-size: 24px; text-decoration: none; color: #1a1a1a; flex-shrink: 0; }
     .logo span { color: #e05c1a; font-weight: bold; }
+
+    .header-center {
+      font-family: 'Arial', sans-serif;
+      font-size: 13px;
+      color: #999;
+      text-align: center;
+      flex: 1;
+    }
+    .header-center strong { color: #1a1a1a; font-weight: 600; }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: #fff;
+      color: #666;
+      font-family: 'Arial', sans-serif;
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-logout:hover { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+    .btn-logout svg { flex-shrink: 0; }
+
+    /* MAIN */
     .main { max-width: 1000px; margin: 32px auto; padding: 0 24px; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .page-header h1 { font-family: 'Georgia', serif; font-size: 22px; font-weight: normal; }
     .btn-new { background: #e05c1a; color: #fff; border: none; border-radius: 3px; padding: 9px 18px; font-size: 13px; text-decoration: none; cursor: pointer; }
     .btn-new:hover { background: #c94e12; }
+
+    /* TABLE */
     table { width: 100%; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; border-collapse: collapse; }
     th { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0; }
     td { font-size: 13px; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #fafafa; }
+
     .badge { font-size: 10px; font-weight: bold; letter-spacing: 0.8px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
     .badge-published { background: #dcfce7; color: #166534; }
     .badge-draft { background: #f3f4f6; color: #6b7280; }
     .badge-scheduled { background: #fef3c7; color: #92400e; }
+
     .actions { display: flex; gap: 8px; }
     .btn-edit { font-size: 12px; color: #555; text-decoration: none; padding: 4px 10px; border: 1px solid #ddd; border-radius: 3px; }
     .btn-edit:hover { background: #f0f0f0; }
     .btn-delete { font-size: 12px; color: #dc2626; background: none; border: 1px solid #fca5a5; border-radius: 3px; padding: 4px 10px; cursor: pointer; }
     .btn-delete:hover { background: #fef2f2; }
+
     .empty { text-align: center; padding: 48px; color: #aaa; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <span>ÔXERETA<span></span> Journalist</span>
-    <span>Olá, <%= user.name %> · <a href="/auth/logout">Sair</a></span>
-  </div>
+
+  <!-- HEADER -->
   <div class="header">
     <a href="/" class="logo">ÔXE<span>RETA</span></a>
+
+    <div class="header-center">
+      Olá, <strong><%= user.name %></strong> — Área da Redação
+    </div>
+
+    <a href="/auth/logout" class="btn-logout">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sair
+    </a>
   </div>
+
+  <!-- MAIN -->
   <div class="main">
     <div class="page-header">
       <h1>Meus Artigos</h1>
       <a href="/admin/articles/new" class="btn-new">+ Novo artigo</a>
     </div>
+
     <table>
       <thead>
         <tr>
@@ -85,5 +141,6 @@
       </tbody>
     </table>
   </div>
+
 </body>
 </html>
